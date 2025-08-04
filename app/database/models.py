@@ -1,1 +1,25 @@
-from sqlachemy import
+from sqlalchemy import BigInteger, String, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
+
+engine = create_async_engine(url='sqlite+aiosqlite:///database.db')
+
+
+async_session = async_sessionmaker(engine)
+
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
+
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tg_id = mapped_column(BigInteger)
+    balance: Mapped[int] = mapped_column(nullable=True)
+
+
+async def init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
